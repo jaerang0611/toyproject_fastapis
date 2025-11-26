@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notice Board</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head><body>
+    <h1>유재랑의 미니홈피에 오신 걸 환영합니다 ^^7</h1><h1>방명록 선하게 남겨주세요 S2</h1>
+
+    <h2>Create Notice</h2>
+    <form id="create-form">
+        <input type="text" id="create-title" placeholder="Title" required><br>
+        <textarea id="create-content" placeholder="Content" required></textarea><br>
+        <input type="text" id="create-nickname" placeholder="Nickname" required><br>
+        <input type="password" id="create-password" placeholder="Password" required><br>
+        <button type="submit">Create</button>
+    </form>
+
+    <h2>Notices</h2>
+    <div id="notices-list"></div>
+
+    <script>
+        const createForm = document.getElementById('create-form');
+        const noticesList = document.getElementById('notices-list');
+
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('create-title').value;
+            const content = document.getElementById('create-content').value;
+            const nickname = document.getElementById('create-nickname').value;
+            const password = document.getElementById('create-password').value;
+
+            const response = await fetch('/api/notices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content, nickname, password }),
+            });
+
+            if (response.ok) {
+                createForm.reset();
+                fetchNotices();
+            } else {
+                alert('Error creating notice');
+            }
+        });
+
+        async function fetchNotices() {
+            const response = await fetch('/api/notices');
+            const notices = await response.json();
+            noticesList.innerHTML = '';
+            notices.forEach(notice => {
+                const noticeDiv = document.createElement('div');
+                noticeDiv.innerHTML = `
+                    <h3>${notice.title}</h3>
+                    <p>${notice.content}</p>
+                    <p><strong>Nickname:</strong> ${notice.nickname}</p>
+                    <p><strong>Created At:</strong> ${notice.created_at}</p>
+                    <button onclick="showUpdateForm(${notice.id}, '${notice.title}', '${notice.content}', '${notice.nickname}')">Update</button>
+                    <button onclick="deleteNotice(${notice.id})">Delete</button>
+                    <div id="update-form-${notice.id}" style="display:none;">
+                        <h4>Update Notice</h4>
+                        <form onsubmit="updateNotice(event, ${notice.id})">
+                            <input type="text" id="update-title-${notice.id}" value="${notice.title}" required><br>
+                            <textarea id="update-content-${notice.id}" required>${notice.content}</textarea><br>
+                            <input type="text" id="update-nickname-${notice.id}" value="${notice.nickname}" required><br>
+                            <input type="password" id="update-password-${notice.id}" placeholder="Password" required><br>
+                            <button type="submit">Update</button>
+                        </form>
+                    </div>
+                `;
+                noticesList.appendChild(noticeDiv);
+            });
+        }
+
+        function showUpdateForm(noticeId) {
+            const updateForm = document.getElementById(`update-form-${noticeId}`);
+            updateForm.style.display = updateForm.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function updateNotice(event, noticeId) {
+            event.preventDefault();
+            const title = document.getElementById(`update-title-${noticeId}`).value;
+            const content = document.getElementById(`update-content-${noticeId}`).value;
+            const nickname = document.getElementById(`update-nickname-${noticeId}`).value;
+            const password = document.getElementById(`update-password-${noticeId}`).value;
+
+            const response = await fetch(`/api/notices/${noticeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content, nickname, password }),
+            });
+
+            if (response.ok) {
+                fetchNotices();
+            } else {
+                alert('Error updating notice');
+            }
+        }
+
+        async function deleteNotice(noticeId) {
+            const password = prompt('Enter password to delete:');
+            if (!password) return;
+
+            const response = await fetch(`/api/notices/${noticeId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password }),
+            });
+
+            if (response.ok) {
+                fetchNotices();
+            } else {
+                alert('Error deleting notice');
+            }
+        }
+
+        fetchNotices();
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            
+            // 💡 1. [No module named uvicorn 해결] Uvicorn이 설치된 Docker 컨테이너의 Python 경로를 지정합니다.
+            "pythonPath": "/usr/local/bin/python3", 
+            "module": "uvicorn",
+            
+            // 💡 2. [ModuleNotFoundError 해결] 작업 디렉토리를 패키지('toyproject_fastapis_02')의 부모 폴더로 지정합니다.
+            "cwd": "/apps/toyproject_fastapis",
+            
+            "args": [
+                // 💡 3. 실행 대상을 원하는 모듈 경로로 변경합니다.
+                "toyproject_fastapis_02.main:app", 
+                "--reload",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        }
+    ]
+}
